@@ -1,3 +1,10 @@
+#Getting and Cleaning Data Assignment
+#Michael Abramovich
+#This script cleans the wearable fitness data set. See the readme and markdown
+# files for more information
+
+library(plyr)
+
 #Load training and test data
 train_data <- read.table("./train/X_train.txt", sep = "", header = FALSE)
 test_data <- read.table("./test/X_test.txt", sep = "", header = FALSE)
@@ -33,7 +40,10 @@ join <- rbind(train, test)
 #Replace activity labels with activity descriptions
 join$Activity <- factor(join$Activity, levels = activity_labels$V1, labels = activity_labels$V2)
 
-write.table(join, file = "./cleanData.csv", quote = FALSE, sep = ",")
+#Write clean data set with only means and standard deviations
+means_stds <- join[, c("subjectID", "Activity", "originalDataSet", grep("mean\\(\\)|std\\(\\)", names(join), value = TRUE))]
+write.table(means_stds, file = "./cleanData.txt", quote = FALSE, sep = " ", row.names = FALSE)
 
-
-means_stds <- join[, c("subjectID", grep("mean\\(\\)|std\\(\\)", names(join), value = TRUE))]
+#Summarize averages by subject and activity
+averages <- ddply(means_stds, .(subjectID, Activity), numcolwise(mean))
+write.table(averages, file = "./averages.txt", quote = FALSE, sep = " ", row.names = FALSE)
